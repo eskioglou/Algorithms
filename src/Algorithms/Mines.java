@@ -1,35 +1,46 @@
+/*
+    Name: Eskioglou Maria
+    AEM: 3237
+    Email: eskioglou@csd.auth.gr
+ */
 package Algorithms;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-
 public class Mines {
-    public static class Point {                     // Δημιουργώ μια βοηθητική κλάση Point για να απεικονήσω καλύτερα τα σημεία με μεταβλητες την τετμημενη και την
-        // και την τεταγμένη (x,y)
+    //I created a helping function in order to depict the points better with variables the x and y.
+    public static class Point {
+
         public int x;
         public int y;
 
+        //The constructor: Initializing the variables.
         public Point(int x, int y) {
-            this.x = x;                             // Ο κατασκευαστής της συνάρτησης
+            this.x = x;
             this.y = y;
         }
     }
 
+    /*
+        We are aware that the first two points are the coordinates of the source and the coordinates of the end(where the treasure is.).
+        I add those points in the list and then delete them from the initial list.
+        Then, we must find all points that are left and right of the first two points.
+     */
     public static ArrayList<Point> quickHull(ArrayList<Point> points) {
         ArrayList<Point> convexHull1 = new ArrayList<Point>();
         ArrayList<Point> convexHull2 = new ArrayList<Point>();
         if (points.size() == 3)
             return (ArrayList) points.clone();
 
-        Point A = points.get(0);        // Ξέρουμε ότι τα δύο πρώτα σημεία είναι οι συντεταγμένες εκκίνησης και οι συντεταγμενες του θησαυρού
+        Point A = points.get(0);
         Point B = points.get(1);
-        convexHull1.add(A);              // Τα προσθέτω στην λίστα που δημιούργησα
+        convexHull1.add(A);
         convexHull1.add(B);
         convexHull2.add(A);
         convexHull2.add(B);
-        points.remove(0);           // Τα αφαιρώ από την αρχική λίστα
+        points.remove(0);
         points.remove(1);
 
         ArrayList<Point> leftSet = new ArrayList<Point>();
@@ -49,7 +60,11 @@ public class Mines {
         return convexHull1;
     }
 
-    public static double distance(Point A, Point B, Point C) {      // Υπολογισμός της απόστασης ενός σημείου C από την ευθεία που ορίζεται από τα σημεία A και B
+
+    /*
+        Returns the distance of a third point C from the line defined by Points A and B.
+     */
+    public static double distance(Point A, Point B, Point C) {
         int ABx = B.x - A.x;
         int ABy = B.y - A.y;
         double num = ABx * (A.y - C.y) - ABy * (A.x - C.x);
@@ -103,7 +118,10 @@ public class Mines {
         hullSet(P, B, leftSetPB, hull);
     }
 
-    public static int pointLocation(Point A, Point B, Point P) {        // Βρίσκει εάν ένα σημείο P ανήκει αριστερά ή δεξιά των σημείων A και B
+    /*
+        This method estimates if a point belongs on the left or on the right side of the points A and B.
+     */
+    public static int pointLocation(Point A, Point B, Point P) {
         int cp1 = (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
         if (cp1 > 0)
             return 1;
@@ -113,35 +131,42 @@ public class Mines {
             return -1;
     }
 
+    /*
+        This method estimates the euclidean length of the path.
+     */
     public static double EuclideanLenghtofPath(ArrayList<Point> hull)
     {
-        double lenght = 0;
+        double length = 0;
         for (int i = 0; i < hull.size() - 1; i++) {
-            // Εφόσον στην μεταβλητή finalPath βρίσκεται το πιο σύντομο μονοπάτι υπολογίζω την ευκλείδεια απόσταση του μονοπατιού
-            lenght += Math.sqrt(Math.pow(hull.get(i).x - hull.get(i + 1).x, 2) + Math.pow(hull.get(i).y - hull.get(i + 1).y, 2));
+            length += Math.sqrt(Math.pow(hull.get(i).x - hull.get(i + 1).x, 2) + Math.pow(hull.get(i).y - hull.get(i + 1).y, 2));
         }
-        return lenght;
+        return length;
     }
 
 
+    /*
+        Reading the file arg[0] as argument from the main.
+        I read each line as a string and then split the two numbers and with parseInt, I transform the string into an int.
+        Then, we create a Point with a and b as parameters, where a is the x coordinates and b is the y coordinates.
+     */
     public static void main(String[] args) throws IOException {
         try {
-            FileInputStream fstream = new FileInputStream("file.txt");             //Διαβάζω το αρχείο arg[0] που περνά σαν όρισμα στην συναρτηση main
+            FileInputStream fstream = new FileInputStream("file.txt");
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             ArrayList<Point> listOfPoints = new ArrayList<>();
-            String strLine;                             //Προτιμώ να διαβάσω τις γραμμές σαν string και μετά να κάνω τον διαχωρισμό των δύο αριθμών
+            String line;
             int i = 0;
-            while ((strLine = br.readLine()) != null) {
-                String[] tokens = strLine.split(" ");       //Εδώ γίνεται ο διαχωρισμός της κάθε γραμμής
-                int a = Integer.parseInt(tokens[0]);
-                int b = Integer.parseInt(tokens[1]);
-                Point point = new Point(a, b);              //  Σε αυτό το σημείο δημιουργώ ένα αντικείμενο Point με παραμέτρους τα a και b
-                listOfPoints.add(i, point);             // Τοποθετώ το σημείο που δημιούργησα στην λίστα με όλα τα σημεία που διαβάζω από το αρχείο
+            while ((line = br.readLine()) != null) {
+                String[] words = line.split(" ");
+                int a = Integer.parseInt(words[0]);
+                int b = Integer.parseInt(words[1]);
+                Point point = new Point(a, b);
+                listOfPoints.add(i, point);
                 i++;
             }
-            ArrayList<Point> finalPath = new ArrayList<Point>();
-            double minDistance = 0;
+            ArrayList<Point> finalPath;
+            double minDistance;
             finalPath = quickHull(listOfPoints);
             minDistance = EuclideanLenghtofPath(finalPath);
 
@@ -157,7 +182,7 @@ public class Mines {
         }
         catch(IOException ioException)
         {
-            System.err.println("Error opening file. Terminating.");
+            System.out.println("Error opening file. Terminating.");
             System.exit(1);
         }
         catch(NoSuchElementException elementException)
@@ -166,7 +191,7 @@ public class Mines {
         }
         catch(IllegalStateException stateException)
         {
-            System.err.println("Error reading from file. Terminating.");
+            System.out.println("Error reading from file. Terminating.");
         }
     }
 }
