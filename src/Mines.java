@@ -1,13 +1,10 @@
+import java.io.*;
+import java.util.ArrayList;
 /*
     Name: Eskioglou Maria
     AEM: 3237
     Email: eskioglou@csd.auth.gr
  */
-package Algorithms;
-
-import java.io.*;
-import java.util.ArrayList;
-
 //-----------------------------------Helping Functions and Classes-----------------------------------------------
 /**
  *
@@ -174,7 +171,7 @@ public class Mines {
         double shortestDistance;
 
         //ReadFile.
-        FileReader file= new FileReader("file.txt");
+        FileReader file= new FileReader(args[0]);
         BufferedReader br = new BufferedReader(file);
         ArrayList<MinePos> list = new ArrayList<>(); //Create list of mines.
         String st;
@@ -192,12 +189,12 @@ public class Mines {
         shortestDistance = pathLength(finalPath);
 
         System.out.printf("The shortest distance is %.5f%n", shortestDistance); //First 5 decimals.
-        System.out.print("The shortest path is: "); //There is a certain format in the output.
+        System.out.print("The shortest path is:"); //There is a certain format in the output.
         for (int i = 0; i < finalPath.size(); i++) {
             if (i != finalPath.size() - 1){
-                System.out.print("(" + finalPath.get(i).x + ", " + finalPath.get(i).y + ")" + "-->");}
+                System.out.print("(" + finalPath.get(i).x + "," + finalPath.get(i).y + ")" + "-->");}
             else{
-                System.out.print("(" + finalPath.get(i).x + ", " + finalPath.get(i).y + ")");}
+                System.out.print("(" + finalPath.get(i).x + "," + finalPath.get(i).y + ")");}
         }
     }
 }
