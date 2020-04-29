@@ -10,8 +10,6 @@ import java.util.ArrayList;
  *
  * The algorithm I picked to implement in the first project is QuickHull.
  * The reason I picked this Algorithm is because its time complexity is 0(n*logn) as stated in the project.
- *  * T(n) = O(n) + 2T(n/2) = O(nlogn)
- *  * T(n) = O(n) + T(n-1) =O(n2)
  * Also, we are not allowed to go through the obstacles, but it is permitted for the agent to move close to the outer mines.
  *
  */
@@ -86,7 +84,6 @@ public class Mines {
 
             return (ArrayList) mines.clone(); //If we are given 3 points then the shortest path are these 3 points.
         //That's why we clone these three mines.
-
 
         MinePos Start = mines.get(0);
         MinePos Finish = mines.get(1);
