@@ -49,7 +49,7 @@ public class Mines{
         ArrayListMines mines=new ArrayListMines();
         MinePos start=null;
         MinePos finish=null;
-        Scanner sc = new Scanner(new File("test1.txt"));
+        Scanner sc = new Scanner(new File(args[0]));
 
         int i = 1;
         while(sc.hasNextInt())
