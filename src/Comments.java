@@ -193,7 +193,7 @@ public class Comments {
         Mines.ArrayListMines mines=new Mines.ArrayListMines();
         Mines.MinePos start=null;
         Mines.MinePos finish=null;
-        Scanner sc = new Scanner(new File("test3.txt"));
+        Scanner sc = new Scanner(new File(args[0]));
 
         int i = 1;
         while(sc.hasNextInt())

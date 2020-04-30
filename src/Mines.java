@@ -36,11 +36,11 @@ public class Mines{
         path1.distance();
         path2.distance();
         if(path1.pathLength()<path2.pathLength()) {
-            System.out.println("The shortest distance is " + path1.pathLength());
+            System.out.println("The shortest distance is " + Math.round(path1.pathLength()*100000.0)/100000.0);
             path1.print();
         }
         else {
-            System.out.println("The shortest distance is " + path2.pathLength());
+            System.out.println("The shortest distance is " + Math.round(path2.pathLength()*100000.0)/100000.0 );
             path2.print();
         }
     }
@@ -107,7 +107,7 @@ public class Mines{
 
     public static class Paths {
         private final ArrayList<MinePos> path;
-        private float distance;
+        private double distance;
 
         public Paths() {
             path=new ArrayList<>();
@@ -126,7 +126,7 @@ public class Mines{
                 distance+=path.get(i-1).distance(path.get(i));
             }
         }
-        public float pathLength() {return distance;}
+        public double pathLength() {return distance;}
 
         public void print() {
             System.out.print("The shortest path is:");
