@@ -1,10 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
-/*
-    Name: Eskioglou Maria
-    AEM: 3237
-    Email: eskioglou@csd.auth.gr
- */
+
 //-----------------------------------Helping Functions and Classes-----------------------------------------------
 /**
  *
@@ -106,9 +102,11 @@ public class Mines {
 
         hullSet(Start, Finish, rightSet, path1);
         hullSet(Start, Finish, leftSet, path2);
-        if(pathLength(path1)>pathLength(path2))
-            return path2;
-        return path1;
+        if(pathLength(path1)>pathLength(path2)){
+            return path2;}
+        else {
+            return path1;
+        }
     }
 
     public static void hullSet(MinePos A, MinePos B, ArrayList<MinePos> set, ArrayList<MinePos> hull) {
@@ -168,7 +166,7 @@ public class Mines {
         double shortestDistance;
 
         //ReadFile.
-        FileReader file= new FileReader(args[0]);
+        FileReader file= new FileReader("test2.txt");
         BufferedReader br = new BufferedReader(file);
         ArrayList<MinePos> list = new ArrayList<>(); //Create list of mines.
         String st;
@@ -176,7 +174,7 @@ public class Mines {
         while ((st = br.readLine()) != null) {
             String[] coords = st.split(" ");
             int a = Integer.parseInt(coords[0]); //First column is x.
-            int b = Integer.parseInt(coords[1]); //First column is y.
+            int b = Integer.parseInt(coords[1]); //Second column is y.
             MinePos pos = new MinePos(a, b); //Add them as the coords of the pos.
             list.add(counter, pos);
             counter++;

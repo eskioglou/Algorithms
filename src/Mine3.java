@@ -1,250 +1,325 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+/*
+ *
+ * The algorithm I picked to implement in the first project is QuickHull.
+ * The reason I picked this Algorithm is because its time complexity is 0(n*logn) as stated in the project.
+ * Also, we are not allowed to go through the obstacles, but it is permitted for the agent to move close to the outer mines.
+ *
+ */
+/*
+    Name: Eskioglou Maria
+    AEM: 3237
+    Email: eskioglou@csd.auth.gr
+ */
+
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
-public class Mine3 {
 
-    public static double pathLength(ArrayList<Point> hull) {
-        double length = 0;
-        for (int i = 0; i < hull.size() - 1; i++) {
-            length += Math.sqrt(Math.pow(hull.get(i).x - hull.get(i + 1).x, 2) + Math.pow(hull.get(i).y - hull.get(i + 1).y, 2));
-        }
-        return length;
-    }
-    public static class Point {
-        private int x;
-        private int y;
+public class Mine3{
 
-        /**
-         * Create a new point in R^2.
-         *
-         * @param x the x-coordinate
-         * @param y the y-coordinate
-         */
-        Point(int x, int y) {
-            this.x = x;
-            this.y = y;
+//-----------------------------------------Sub Class: MinePos--------------------------------------
+// This is a helping class in order to depict the Mines in two dimensions, with parameters as x and y.
+// This subclass contains the constructor, getters for x and y, a method equal and another that calculates
+// the distance.
+    public static class MinePos {
+        private final int x;
+        private final int y;
+
+        public MinePos(int x1,int y1){
+            x=x1;
+            y=y1;
         }
 
-
-        public void setX(int x) {
-            this.x = x;
-        }
-
-
-        public void setY(int y) {
-            this.y = y;
-        }
-
-
-        public int getX() {
+        public int getX()
+        {
             return x;
         }
 
-
-        public int getY() {
+        public int getY()
+        {
             return y;
         }
 
-
-        /**
-         * Calculate the cross product of three points.
-         *
-         * @param A point located in the very left side.
-         * @param B point located in the very right side.
-         * @return cross product.
-         */
-        private double crossProduct(Point A, Point B) {
-            return (B.x - A.x) * (this.y - A.y) - (B.y - A.y) * (this.x - A.x);
+        public boolean equal(MinePos o){
+            return this.x==o.x && this.y==o.y;
         }
 
-
-        /**
-         * Determine the area in which point P(this) is located according to the line
-         * traced between point A and point B.
-         *
-         * @param A point located in the very left side.
-         * @param B point located in the very right side.
-         * @return Returns true if P is located in the right side of the line.
-         */
-        public boolean isRightOfLine(Point A, Point B) {
-            return Double.compare(crossProduct(A, B), 0) > 0;
-        }
-
-
-        /**
-         * Calculate the distance of (this) point to the line which is formed by points A and B.
-         *
-         * @param A
-         * @param B
-         * @return The distance to the line.
-         */
-        public double getDistanceToLine(Point A, Point B) {
-            double cp;
-
-            cp = (B.getX() - A.getX()) * (A.getY() - this.y) - (B.getY() - A.getY()) * (A.getX() - this.x);
-
-            if (cp < 0)
-                cp = -cp;
-
-            return cp;
-        }
-
-
-        /**
-         * Calculate the euclidean distance between two points ('this' and B)
-         *
-         * @param B the second point.
-         * @return The euclideanDistance distance
-         */
-        public double euclideanDistance(Point B) {
-            return Math.sqrt(Math.pow(B.getX() - this.x, 2) + Math.pow(B.getY() - this.y, 2));
+        public double distance(MinePos o) {
+            return Math.sqrt(Math.pow(o.x-this.x,2) + Math.pow(o.y-this.y,2));
         }
     }
 
-    public static class QuickHull {
-        public void hullSet(Point A, Point B, ArrayList<Point> set, ArrayList<Point> hull) {
-            int insertPosition = hull.indexOf(B);
+//-------------------------------------------------------------------------------------------------------
+//------------------------------------Sub Class: Paths----------------------------------------------------
+//  This subclass contains the constructor and methods to add a MinePos, the position of a mine, sort it,
+//  distance and return distance and then print the same format as asked in the project.
 
-            if (set.size() == 0)
-                return;
+    public static class Paths {
+        private final ArrayList<MinePos> path;
+        private float distance;
 
-            if (set.size() == 1) {
-                Point p = set.get(0);
-                set.remove(p);
-
-                hull.add(insertPosition, p);
-
-                return;
-            }
-
-            double dist = 0.0;
-            int farthestPointIndex = -1;
-
-            int index = 0;
-
-            for (Point p : set) {
-                double distance = p.getDistanceToLine(A, B);
-                if (distance > dist) {
-                    dist = distance;
-                    farthestPointIndex = index;
-                }
-                index++;
-            }
-
-            Point P = set.get(farthestPointIndex);
-            set.remove(P);
-            hull.add(insertPosition, P);
-
-            // Determine points on the right of the line traced by points AP
-            ArrayList<Point> rightPointsAP = new ArrayList<Point>();
-            index = 0;
-
-            for (Point q : set) {
-                if (q.isRightOfLine(A, P))
-                    rightPointsAP.add(q);
-            }
-
-            // Determine points on the right of the line traced by points PB
-            ArrayList<Point> rightPointsPB = new ArrayList<Point>();
-            index = 0;
-
-            for (Point q : set)
-                if (q.isRightOfLine(P, B))
-                    rightPointsPB.add(q);
-
-            hullSet(A, P, rightPointsAP, hull);
-            hullSet(P, B, rightPointsPB, hull);
+        public Paths() {
+            path=new ArrayList<>();
+            distance=0;
+        }
+        public void add(MinePos p) {
+            path.add(p);
         }
 
-        public ArrayList<Point> run(ArrayList<Point> points) {
-            ArrayList<Point> convexHull = new ArrayList<Point>();
+        public void sort() {
+            path.sort((o1, o2) -> Float.compare(o1.getX(), o2.getX()));
+        }
 
-            if (points.size() < 3)
-                return points;
+        public void distance() {
+            for (int i = 1; i < path.size(); i++) {
+                distance+=path.get(i-1).distance(path.get(i));
+            }
+        }
+        public float getDistance() {return distance;}
+
+        public void print() {
+            System.out.print("The shortest path is:");
+            int i;
+            for(i=0;i<path.size()-1;i++) {
+                System.out.print("("+ path.get(i).getX()+","+path.get(i).getY()+")-->");
+            }
+            System.out.print("("+ path.get(i).getX()+","+path.get(i).getY()+")");
+        }
+    }
+
+
+//-------------------------------------------------------------------------------------------------------
+//------------------------------------Sub Class: QuickHull-----------------------------------------------
+//  The quickHull method implements the logic of the QuickHull algorithm.
+//  I took the algorithm from: https://www.sanfoundry.com/java-program-implement-quick-hull-algorithm-find-convex-hull/
+//  However, I adjusted it in order to fully operate in the given example.
+//
+    public static class QuickHull {
+        public ArrayList<MinePos> quickHull(ArrayList<MinePos> mines) {
+            ArrayList<MinePos> convexHull = new ArrayList<>();
+            if (mines.size() < 3) //If we are given 3 points then the shortest path are these 3 points.
+                return (ArrayList<MinePos>) mines.clone(); //That's why we clone these three mines.
 
             int minPoint = -1, maxPoint = -1;
+            float minX = Integer.MAX_VALUE;
+            float maxX = Integer.MIN_VALUE;
 
-            // make sure to take the very (minX, maxX)
-            int minX = Integer.MAX_VALUE;
-            int maxX = Integer.MIN_VALUE;
-
-            int index = 0;
-
-            for (Point p : points) {
-                int x = p.getX();
-
-                if (x < minX) {
-                    minX = x;
-                    minPoint = index;
+            for (int i = 0; i < mines.size(); i++) {
+                if (mines.get(i).getX() < minX) {
+                    minX = mines.get(i).getX();
+                    minPoint = i;
                 }
-                if (x > maxX) {
-                    maxX = x;
-                    maxPoint = index;
+                if (mines.get(i).getX() > maxX)
+                {
+                    maxX = mines.get(i).getX();
+                    maxPoint = i;
                 }
-                index++;
             }
+            MinePos Start = mines.get(minPoint);
+            MinePos Finish = mines.get(maxPoint);
+            convexHull.add(Start);
+            convexHull.add(Finish);
+            mines.remove(Start);
+            mines.remove(Finish);
+            ArrayList<MinePos> leftSet = new ArrayList<>();  //Mines on the left of the line.
+            ArrayList<MinePos> rightSet = new ArrayList<>(); //Mines on the right of the line.
 
-            // initialize convexHull with the min/max point on the x axis.
-            Point A = points.get(minPoint);
-            Point B = points.get(maxPoint);
+            // divide into two: The right and the left and we separate the mines proportionally.
+            for (MinePos m : mines) {
+                if (findSide(Start, Finish, m) == -1) // All points that are on the left side of the start and finish.
+                    leftSet.add(m);
+                else if (findSide(Start, Finish, m) == 1)  // All points that are on the right side.
+                    rightSet.add(m);
 
-            convexHull.add(A);
-            convexHull.add(B);
-
-            // discard from the original points
-            points.remove(A);
-            points.remove(B);
-
-            // the original set is splitted by the line formed by point (A,B).
-            ArrayList<Point> leftPoints = new ArrayList<Point>();
-            ArrayList<Point> rightPoints = new ArrayList<Point>();
-
-            for (Point p : points) {
-                if (p.isRightOfLine(A, B))
-                    rightPoints.add(p);
-                else
-                    leftPoints.add(p);
             }
-
-            hullSet(A, B, rightPoints, convexHull);
-            hullSet(B, A, leftPoints, convexHull);
-
+            hullSet(Start, Finish, rightSet, convexHull);
+            hullSet(Finish, Start, leftSet, convexHull);
             return convexHull;
         }
-    }
 
 
-        public static void main(String args[]) throws IOException {
-            ArrayList<Point> finalPath;
-            double shortestDistance;
-            QuickHull q=new QuickHull();
+        //Calculates the distance of a third point C from the line defined by Points A and B.
+        public static double distance(MinePos A, MinePos B, MinePos C) {
+            int ABx = B.x - A.x;
+            int ABy = B.y - A.y;
+            double dist = ABx * (A.y - C.y) - ABy * (A.x - C.x);
+            if (dist < 0) //Distance must be positive.
+                dist = -dist;
+            return dist;
+        }
 
-            //ReadFile.
-            FileReader file= new FileReader("file1.txt");
-            BufferedReader br = new BufferedReader(file);
-            ArrayList<Point> list = new ArrayList<>(); //Create list of mines.
-            String st;
-            int counter = 0;
-            while ((st = br.readLine()) != null) {
-                String[] coords = st.split(" ");
-                int a = Integer.parseInt(coords[0]); //First column is x.
-                int b = Integer.parseInt(coords[1]); //First column is y.
-                Point pos = new Point(a, b); //Add them as the coords of the pos.
-                list.add(counter, pos);
-                counter++;
+        public void hullSet(MinePos A, MinePos B, ArrayList<MinePos> set, ArrayList<MinePos> hull)
+        {
+            int insertPosition = hull.indexOf(B);
+            if (set.isEmpty()) //If there are no points then stop here.
+                return;
+            if (set.size() == 1) {
+                MinePos p = set.get(0);
+                set.remove(p);
+                hull.add(insertPosition, p);
+                return;
             }
+            double dist = Integer.MIN_VALUE;
+            int furthestPoint = -1;
+            for (int i = 0; i < set.size(); i++) {
+                MinePos p = set.get(i);
+                double distance = distance(A, B, p);
+                if (distance > dist) {
+                    dist = distance;
+                    furthestPoint = i;
+                }
+            }
+            MinePos P = set.get(furthestPoint);
+            set.remove(furthestPoint);
+            hull.add(insertPosition, P);
+            // Determine who's to the left of AP
+            ArrayList<MinePos> leftSetAP = new ArrayList<>();
+            for (MinePos M : set) {
+                if (findSide(A, P, M) == 1) {
+                    leftSetAP.add(M);
+                }
+            }
+            // Determine who's to the left of PB
+            ArrayList<MinePos> leftSetPB = new ArrayList<>();
+            for (MinePos M : set) {
+                if (findSide(P, B, M) == 1) {
+                    leftSetPB.add(M);
+                }
+            }
+            hullSet(A, P, leftSetAP, hull);
+            hullSet(P, B, leftSetPB, hull);
+        }
+        /*
+         * check the location of a point between two others
+         * @param A,B,P
+         */
+        public int findSide(MinePos A, MinePos B, MinePos P){
+            float cp1 = (B.getX() - A.getX()) * (P.getY() - A.getY()) - (B.getY() - A.getY()) * (P.getX() - A.getX());
+            if (cp1 > 0)
+                return 1;
+            else if (cp1 == 0)
+                return 0;
+            else
+                return -1;
+        }
+    }
+    //------------------------------------------------------------------------------
+    public static class ArrayListPoints {
+        private final ArrayList<MinePos> mines;
+        public ArrayListPoints()
+        {
+            mines=new ArrayList<>();
 
-            finalPath = q.run(list);
-            shortestDistance = pathLength(finalPath);
-            System.out.printf("The shortest distance is %.5f%n", shortestDistance); //First 5 decimals.
-            System.out.print("The shortest path is:"); //There is a certain format in the output.
-            for (int i = 0; i < finalPath.size(); i++) {
-                if (i != finalPath.size() - 1){
-                    System.out.print("(" + finalPath.get(i).x + "," + finalPath.get(i).y + ")" + "-->");}
-                else{
-                    System.out.print("(" + finalPath.get(i).x + "," + finalPath.get(i).y + ")");}
+        }
+        /*
+         * add a point
+         * @param p
+         */
+        public void add(MinePos p)
+        {
+            mines.add(p);
+        }
+
+        /*
+         * return the size of ArrayList
+         */
+        public int length()
+        {
+            return mines.size();
+        }
+        /*
+         * return a point
+         * @param i
+         */
+        public MinePos getposition(int i)
+        {
+            return mines.get(i);
+        }
+        /*
+         * Find the points of the perimeter
+         */
+        public void quickhull()
+        {
+            QuickHull qh = new QuickHull();
+            ArrayList<MinePos> p = qh.quickHull(mines);
+            mines.clear();
+            mines.addAll(p);
+            p.clear();
+        }
+    }
+//-----------------------------------------------------------------------------------
+
+    public static void main(String[] args) throws IOException {
+        ArrayListPoints table=new ArrayListPoints();
+        MinePos start=null;
+        MinePos goal=null;
+        Scanner scanner = new Scanner(new File("test3.txt"));
+
+        int i = 1;
+        while(scanner.hasNextInt())
+        {
+            if(i==1)
+            {
+                start=new MinePos(scanner.nextInt(),scanner.nextInt());
+            }
+            else if(i==2)
+            {
+                goal=new MinePos(scanner.nextInt(),scanner.nextInt());
+            }
+            else
+            {
+                table.add(new MinePos(scanner.nextInt(),scanner.nextInt()));
+            }
+            i++;
+        }
+
+        table.add(start);
+        table.add(goal);
+        table.quickhull(); //Find the perimeter
+        minPath(table,start,goal); // Find the minimum path
+        System.out.println();
+
+    }
+    /*
+     * Find the minimum path
+     * @param table,start,goal
+     */
+    public static void minPath(ArrayListPoints table,MinePos start,MinePos goal)
+    {
+        Paths DownPath = new Paths();
+        int i;
+        for(i=0;i<table.length();i++) //table has first the down path. When we find the start,then begin the Up path
+        {
+            if(table.getposition(i).equal(start))
+            {
+                break;
+            }
+            else
+            {
+                DownPath.add(table.getposition(i));
             }
         }
+        DownPath.add(start);
+        DownPath.add(goal);
+        Paths UpPath = new Paths();
+        for(int j=i;j<table.length();j++)
+        {
+            UpPath.add(table.getposition(j));
+        }
+        DownPath.sort();
+        UpPath.sort();
+        DownPath.distance();
+        UpPath.distance();
+        if(DownPath.getDistance()<UpPath.getDistance())
+        {
+            System.out.println("The shortest distance is " + DownPath.getDistance());
+            DownPath.print();
+        }
+        else
+        {
+            System.out.println("The shortest distance is " + UpPath.getDistance());
+            UpPath.print();
+        }
+    }
 }
