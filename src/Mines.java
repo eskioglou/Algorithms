@@ -26,17 +26,17 @@ public class Mines{
             if(mines.getposition(i).equal(start)) { break; }
             else { path1.add(mines.getposition(i)); }
         }
-        path1.add(start);
-        path1.add(finish);
-
-        path1.sort();
-        path1.distance();
 
         Paths path2 = new Paths();
         for(int j=i;j<mines.length();j++) {
             path2.add(mines.getposition(j));
         }
+        path1.add(start);
+        path1.add(finish);
+
+        path1.sort();
         path2.sort();
+        path1.distance();
         path2.distance();
 
         if(path1.pathLength()<path2.pathLength()) {
@@ -207,9 +207,9 @@ public class Mines{
             if (set.isEmpty()) //If there are no points then stop here.
                 return;
             if (set.size() == 1) {
-                MinePos p = set.get(0);
-                set.remove(p);
-                hull.add(insertPosition, p);
+                MinePos m = set.get(0);
+                set.remove(m);
+                hull.add(insertPosition, m);
                 return;
             }
             double dist = Integer.MIN_VALUE;
@@ -262,8 +262,8 @@ public class Mines{
 
 
     // This method estimates if a point belongs on the left or on the right side of the points A and B.
-    public static int findSide(MinePos A, MinePos B, MinePos P) {
-        int side = (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
+    public static float findSide(MinePos A, MinePos B, MinePos P) {
+        float side = (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
         if (side > 0)
             return 1;
         else if (side == 0)
