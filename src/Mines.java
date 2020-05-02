@@ -1,14 +1,14 @@
 /*
+    Name: Eskioglou Maria
+    AEM: 3237
+    Email: eskioglou@csd.auth.gr
+ */
+/*
  *
  * The algorithm I picked to implement in the first project is QuickHull.
  * The reason I picked this Algorithm is because its time complexity is 0(n*logn) as stated in the project.
  * Also, we are not allowed to go through the obstacles, but it is permitted for the agent to move close to the outer mines.
  *
- */
-/*
-    Name: Eskioglou Maria
-    AEM: 3237
-    Email: eskioglou@csd.auth.gr
  */
 
 import java.io.*;
@@ -18,23 +18,27 @@ import java.util.Scanner;
 
 public class Mines{
 
+    //This method calculates the shortest path between the up and down side of the area.
     public static void shortestPath(ArrayListMines mines,MinePos start,MinePos finish) {
         Paths path1 = new Paths();
         int i;
-        for(i=0;i<mines.length();i++){ //table has first the down path. When we find the start,then begin the Up path{
+        for(i=0;i<mines.length();i++){ //table has first the down path. When we find the start,then begin the Up path
             if(mines.getposition(i).equal(start)) { break; }
             else { path1.add(mines.getposition(i)); }
         }
         path1.add(start);
         path1.add(finish);
+
+        path1.sort();
+        path1.distance();
+
         Paths path2 = new Paths();
         for(int j=i;j<mines.length();j++) {
             path2.add(mines.getposition(j));
         }
-        path1.sort();
         path2.sort();
-        path1.distance();
         path2.distance();
+
         if(path1.pathLength()<path2.pathLength()) {
             System.out.println("The shortest distance is " + Math.round(path1.pathLength()*100000.0)/100000.0);
             path1.print();
@@ -76,7 +80,8 @@ public class Mines{
         private final int x;
         private final int y;
 
-        public MinePos(int x1,int y1){
+    //The constructor: Initializing the dimensions.
+    public MinePos(int x1,int y1){
             x=x1;
             y=y1;
         }
@@ -91,12 +96,12 @@ public class Mines{
             return y;
         }
 
-        public boolean equal(MinePos o){
-            return this.x==o.x && this.y==o.y;
+        public boolean equal(MinePos mine){
+            return this.x==mine.x && this.y==mine.y;
         }
 
-        public double distance(MinePos o) {
-            return Math.sqrt(Math.pow(o.x-this.x,2) + Math.pow(o.y-this.y,2));
+        public double distance(MinePos mine) {
+            return Math.sqrt(Math.pow(mine.x-this.x,2) + Math.pow(mine.y-this.y,2));
         }
     }
 
@@ -113,12 +118,12 @@ public class Mines{
             path=new ArrayList<>();
             distance=0;
         }
-        public void add(MinePos p) {
-            path.add(p);
+        public void add(MinePos mine) {
+            path.add(mine);
         }
 
         public void sort() {
-            path.sort((o1, o2) -> Float.compare(o1.getX(), o2.getX()));
+            path.sort((m1, m2) -> Float.compare(m1.getX(), m2.getX()));
         }
 
         public void distance() {
@@ -151,23 +156,27 @@ public class Mines{
             if (mines.size() < 3) //If we are given 3 points then the shortest path are these 3 points.
                 return (ArrayList<MinePos>) mines.clone(); //That's why we clone these three mines.
 
-            int minPoint = -1, maxPoint = -1;
+            //min - the starting point of the convexHull
+            //max - the final point of the convexHull
+            int min = -1, max = -1;
             float minX = Integer.MAX_VALUE;
             float maxX = Integer.MIN_VALUE;
 
+            //I am identifying the start and the finish of the convexHull
+            //from the ArrayList containing all the available mines
             for (int i = 0; i < mines.size(); i++) {
                 if (mines.get(i).getX() < minX) {
                     minX = mines.get(i).getX();
-                    minPoint = i;
+                    min = i;
                 }
                 if (mines.get(i).getX() > maxX)
                 {
                     maxX = mines.get(i).getX();
-                    maxPoint = i;
+                    max = i;
                 }
             }
-            MinePos Start = mines.get(minPoint);
-            MinePos Finish = mines.get(maxPoint);
+            MinePos Start = mines.get(min); //The start
+            MinePos Finish = mines.get(max); // The finish - treasure.
             convexHull.add(Start);
             convexHull.add(Finish);
             mines.remove(Start);
@@ -188,20 +197,13 @@ public class Mines{
             return convexHull;
         }
 
+     // Determines the exact mines the convexHull will be consisted of from leftSet and rightSet through repetition and adds them to the convexHull.
+     // This method ,along the quickhull method, implements and completes the QuickHull algorithm and allows the convexHull to be formed.
+     // The quickhull method calls this one once with the leftSet as the set parameter, and once with the rightSet as the set parameter.
 
-        //Calculates the distance of a third point C from the line defined by Points A and B.
-        public static double distance(MinePos A, MinePos B, MinePos C) {
-            int ABx = B.x - A.x;
-            int ABy = B.y - A.y;
-            double dist = ABx * (A.y - C.y) - ABy * (A.x - C.x);
-            if (dist < 0) //Distance must be positive.
-                dist = -dist;
-            return dist;
-        }
-
-        public void hullSet(MinePos A, MinePos B, ArrayList<MinePos> set, ArrayList<MinePos> hull)
+        public void hullSet(MinePos Start, MinePos Finish, ArrayList<MinePos> set, ArrayList<MinePos> hull)
         {
-            int insertPosition = hull.indexOf(B);
+            int insertPosition = hull.indexOf(Finish);
             if (set.isEmpty()) //If there are no points then stop here.
                 return;
             if (set.size() == 1) {
@@ -212,9 +214,11 @@ public class Mines{
             }
             double dist = Integer.MIN_VALUE;
             int furthestPoint = -1;
+
+            //This loop finds the furthest point of the set from the Start - Finish line
             for (int i = 0; i < set.size(); i++) {
                 MinePos m = set.get(i);
-                double distance = distance(A, B, m);
+                double distance = distance(Start, Finish, m);
                 if (distance > dist) {
                     dist = distance;
                     furthestPoint = i;
@@ -223,35 +227,54 @@ public class Mines{
             MinePos P = set.get(furthestPoint);
             set.remove(furthestPoint);
             hull.add(insertPosition, P);
-            // Determine what's to the left of AP
+
+            // Determine what's to the left of StartP
             ArrayList<MinePos> leftSetAP = new ArrayList<>();
             for (MinePos M : set) {
-                if (findSide(A, P, M) == 1) {
+                if (findSide(Start, P, M) == 1) {
                     leftSetAP.add(M);
                 }
             }
-            // Determine what's to the left of PB
+            // Determine what's to the left of PFinish
             ArrayList<MinePos> leftSetPB = new ArrayList<>();
             for (MinePos M : set) {
-                if (findSide(P, B, M) == 1) {
+                if (findSide(P, Finish, M) == 1) {
                     leftSetPB.add(M);
                 }
             }
-            hullSet(A, P, leftSetAP, hull);
-            hullSet(P, B, leftSetPB, hull);
+
+            //Repetition in order to figure out the rest of the mines needed to complete the convexHull.
+            hullSet(Start, P, leftSetAP, hull);
+            hullSet(P, Finish, leftSetPB, hull);
         }
-        
-        public int findSide(MinePos A, MinePos B, MinePos P){
-            float side = (B.getX() - A.getX()) * (P.getY() - A.getY()) - (B.getY() - A.getY()) * (P.getX() - A.getX());
-            if (side > 0)
-                return 1;
-            else if (side == 0)
-                return 0;
-            else
-                return -1;
-        }
+
+
+    //Calculates the distance of a third point C from the line defined by Points A and B.
+    public static double distance(MinePos A, MinePos B, MinePos C) {
+        int ABx = B.x - A.x;
+        int ABy = B.y - A.y;
+        double dist = ABx * (A.y - C.y) - ABy * (A.x - C.x);
+        if (dist < 0) //Distance must be positive.
+            dist = -dist;
+        return dist;
     }
-    //------------------------------------------------------------------------------
+
+
+
+    // This method estimates if a point belongs on the left or on the right side of the points A and B.
+    public static int findSide(MinePos A, MinePos B, MinePos P) {
+        int side = (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
+        if (side > 0)
+            return 1;
+        else if (side == 0)
+            return 0;
+        else
+            return -1;
+    }
+    }
+    //---------------------------------------------------------------------------------------------------------
+    //---------------------------------SubClass: ArrayListMines -----------------------------------------------
+    //  This is a helping class for some main operations of the ArrayList such as the addition, the length, the position.
     public static class ArrayListMines {
         private final ArrayList<MinePos> mines;
         public ArrayListMines() {
@@ -266,9 +289,7 @@ public class Mines{
             return mines.size();
         }
 
-        public MinePos getposition(int i){
-            return mines.get(i);
-        }
+        public MinePos getposition(int i){ return mines.get(i);}
 
         public void quickhull() {
             QuickHull qh = new QuickHull();
